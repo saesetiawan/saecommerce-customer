@@ -1,0 +1,59 @@
+@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+  --ecommerce-primary: #ec4899;
+  --ecommerce-primary-strong: #db2777;
+  --ecommerce-primary-soft: #fdf2f8;
+  --ecommerce-secondary: #06b6d4;
+  --ecommerce-secondary-strong: #0891b2;
+  --ecommerce-secondary-soft: #ecfeff;
+  --ecommerce-accent: #facc15;
+  --ecommerce-accent-strong: #eab308;
+  --ecommerce-accent-soft: #fefce8;
+  --ecommerce-background: #fff7fb;
+  --ecommerce-background-image: none;
+  --ecommerce-surface: #ffffff;
+  --ecommerce-text: #0f172a;
+  --ecommerce-muted-text: #64748b;
+  --ecommerce-border: #e2e8f0;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  background-color: var(--ecommerce-background);
+  background-image: var(--ecommerce-background-image);
+  background-attachment: fixed;
+  background-position: center top;
+  background-repeat: no-repeat;
+  background-size: cover;
+  color: var(--ecommerce-text);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+@layer components {
+  .app-container {
+    @apply mx-auto w-full max-w-[1440px] px-4 sm:px-6 lg:px-8;
+  }
+
+  .app-container-wide {
+    @apply mx-auto w-full max-w-[1440px] px-4 sm:px-6 lg:px-8;
+  }
+}
