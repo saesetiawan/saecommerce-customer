@@ -211,11 +211,7 @@ function showFallbackNotification(
         window.focus();
 
         const data = options.data as Record<string, string> | undefined;
-        const link =
-            data?.link ||
-            (data?.order_number
-                ? `/orders/${data.order_number}`
-                : "");
+        const link = getNotificationTargetUrl(data);
 
         if (link) {
             window.location.assign(link);
@@ -223,6 +219,28 @@ function showFallbackNotification(
 
         notification.close();
     };
+}
+
+function getNotificationTargetUrl(data?: Record<string, string>) {
+    if (data?.order_number) {
+        return `/orders/${data.order_number}`;
+    }
+
+    if (!data?.link || typeof window === "undefined") {
+        return "";
+    }
+
+    try {
+        const url = new URL(data.link, window.location.origin);
+
+        if (url.origin !== window.location.origin) {
+            return "";
+        }
+
+        return `${url.pathname}${url.search}${url.hash}`;
+    } catch {
+        return "";
+    }
 }
 
 function getBrowserDeviceID() {

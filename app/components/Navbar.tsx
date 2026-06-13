@@ -31,13 +31,19 @@ import { clearOrderNotifications } from "@/app/services/notification.service";
 import {
     registerFirebaseNotificationToken,
     showBrowserNotification,
-    showBrowserNotificationFromPayload,
     subscribeForegroundNotifications,
     unregisterFirebaseNotificationToken,
 } from "@/app/lib/firebase-notifications";
 import { toast } from "sonner";
 
-function refreshCustomerOrderDetailFromPushPayload(payload: any) {
+type PushPayload = {
+    data?: {
+        order_number?: string;
+    };
+    order_number?: string;
+};
+
+function refreshCustomerOrderDetailFromPushPayload(payload: PushPayload) {
     const orderNumber =
         payload?.data?.order_number ||
         payload?.order_number;
@@ -123,7 +129,6 @@ export default function Navbar() {
             toast.success(title, {
                 description,
             });
-            showBrowserNotificationFromPayload(payload);
             notifyNotificationsChanged();
             notifyAuthChanged();
             refreshCustomerOrderDetailFromPushPayload(payload);

@@ -63,7 +63,7 @@ self.addEventListener("notificationclick", (event) => {
     event.notification.close();
 
     const data = event.notification.data || {};
-    const targetUrl = data.link || (data.order_number ? `/orders/${data.order_number}` : "/");
+    const targetUrl = getNotificationTargetUrl(data);
 
     event.waitUntil(
         self.clients
@@ -82,6 +82,28 @@ self.addEventListener("notificationclick", (event) => {
             }),
     );
 });
+
+function getNotificationTargetUrl(data) {
+    if (data.order_number) {
+        return `/orders/${data.order_number}`;
+    }
+
+    if (!data.link) {
+        return "/";
+    }
+
+    try {
+        const url = new URL(data.link, self.location.origin);
+
+        if (url.origin !== self.location.origin) {
+            return "/";
+        }
+
+        return `${url.pathname}${url.search}${url.hash}`;
+    } catch {
+        return "/";
+    }
+}
 
 async function broadcastPushReceived(payload) {
     const clients = await self.clients.matchAll({
