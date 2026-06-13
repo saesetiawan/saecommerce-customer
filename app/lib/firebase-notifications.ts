@@ -50,6 +50,9 @@ async function getServiceWorkerRegistration() {
 
     const registration = await navigator.serviceWorker.register(
         "/firebase-messaging-sw.js",
+        {
+            updateViaCache: "none",
+        },
     );
     await registration.update();
 
@@ -181,26 +184,12 @@ export function showBrowserNotification(options: {
         body: options.message || "",
         icon: options.icon || DEFAULT_NOTIFICATION_ICON,
         badge: options.badge || DEFAULT_NOTIFICATION_ICON,
-        data: options.data,
+        data: sanitizeNotificationData(options.data),
         tag:
             options.data?.notification_id ||
             options.data?.order_number ||
             "ecommerce-notification",
     };
-
-    if ("serviceWorker" in navigator) {
-        void navigator.serviceWorker.ready
-            .then((registration) =>
-                registration.showNotification(
-                    options.title,
-                    notificationOptions,
-                ),
-            )
-            .catch(() => {
-                showFallbackNotification(options.title, notificationOptions);
-            });
-        return;
-    }
 
     showFallbackNotification(options.title, notificationOptions);
 }
@@ -245,6 +234,23 @@ function getNotificationTargetUrl(data?: Record<string, string>) {
     } catch {
         return "";
     }
+}
+
+function sanitizeNotificationData(data?: Record<string, string>) {
+    if (!data) {
+        return undefined;
+    }
+
+    const nextData = { ...data };
+    const safeLink = getNotificationTargetUrl(data);
+
+    if (safeLink) {
+        nextData.link = safeLink;
+    } else {
+        delete nextData.link;
+    }
+
+    return nextData;
 }
 
 function getBrowserDeviceID() {

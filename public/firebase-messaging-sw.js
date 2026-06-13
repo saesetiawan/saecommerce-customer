@@ -26,7 +26,7 @@ self.addEventListener("push", (event) => {
     const title = notification.title || data.title || "Notifikasi baru";
     const options = {
         body: notification.body || data.message || "",
-        data,
+        data: sanitizeNotificationData(data),
         icon: data.icon || "/favicon.ico",
         badge: data.badge || "/favicon.ico",
         tag: data.notification_id || data.order_number || "ecommerce-notification",
@@ -83,16 +83,32 @@ function getNotificationTargetUrl(data) {
     }
 }
 
+function sanitizeNotificationData(data) {
+    const nextData = { ...data };
+    const safeLink = getNotificationTargetUrl(data);
+
+    if (safeLink && safeLink !== "/") {
+        nextData.link = safeLink;
+    } else {
+        delete nextData.link;
+    }
+
+    return nextData;
+}
+
 async function handlePushNotification({ title, data, options }) {
     const clients = await getWindowClients();
-    const hasVisibleClient = clients.some((client) => client.visibilityState === "visible");
+    const notificationData = sanitizeNotificationData(data);
+    const hasVisibleClient = clients.some(
+        (client) => client.visibilityState === "visible" || client.focused,
+    );
 
     await broadcastPushReceived(
         {
             title,
             notification_id: data.notification_id,
             order_number: data.order_number,
-            data,
+            data: notificationData,
             notification_displayed_by_service_worker: !hasVisibleClient,
             notification_handled_by_visible_client: hasVisibleClient,
         },
@@ -111,7 +127,7 @@ async function handlePushNotification({ title, data, options }) {
                 title,
                 notification_id: data.notification_id,
                 order_number: data.order_number,
-                data,
+                data: notificationData,
                 notification_displayed_by_service_worker: false,
                 notification_error: String(error),
             },
