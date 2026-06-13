@@ -186,7 +186,6 @@ export function showBrowserNotification(options: {
             options.data?.notification_id ||
             options.data?.order_number ||
             "ecommerce-notification",
-        renotify: true,
     };
 
     if ("serviceWorker" in navigator) {
