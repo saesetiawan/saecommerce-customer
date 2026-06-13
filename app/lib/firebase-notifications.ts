@@ -182,6 +182,11 @@ export function showBrowserNotification(options: {
         icon: options.icon || DEFAULT_NOTIFICATION_ICON,
         badge: options.badge || DEFAULT_NOTIFICATION_ICON,
         data: options.data,
+        tag:
+            options.data?.notification_id ||
+            options.data?.order_number ||
+            "ecommerce-notification",
+        renotify: true,
     };
 
     if ("serviceWorker" in navigator) {

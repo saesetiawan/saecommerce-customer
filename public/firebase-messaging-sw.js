@@ -34,29 +34,7 @@ self.addEventListener("push", (event) => {
         requireInteraction: true,
     };
 
-    event.waitUntil(
-        Promise.all([
-            broadcastPushReceived({
-                title,
-                notification_id: data.notification_id,
-                order_number: data.order_number,
-                data,
-                notification_displayed_by_service_worker: true,
-            }),
-            self.registration
-                .showNotification(title, options)
-                .catch((error) => {
-                    return broadcastPushReceived({
-                        title,
-                        notification_id: data.notification_id,
-                        order_number: data.order_number,
-                        data,
-                        notification_displayed_by_service_worker: false,
-                        notification_error: String(error),
-                    });
-                }),
-        ]),
-    );
+    event.waitUntil(handlePushNotification({ title, data, options }));
 });
 
 self.addEventListener("notificationclick", (event) => {
@@ -105,13 +83,54 @@ function getNotificationTargetUrl(data) {
     }
 }
 
-async function broadcastPushReceived(payload) {
-    const clients = await self.clients.matchAll({
+async function handlePushNotification({ title, data, options }) {
+    const clients = await getWindowClients();
+    const hasVisibleClient = clients.some((client) => client.visibilityState === "visible");
+
+    await broadcastPushReceived(
+        {
+            title,
+            notification_id: data.notification_id,
+            order_number: data.order_number,
+            data,
+            notification_displayed_by_service_worker: !hasVisibleClient,
+            notification_handled_by_visible_client: hasVisibleClient,
+        },
+        clients,
+    );
+
+    if (hasVisibleClient) {
+        return;
+    }
+
+    try {
+        await self.registration.showNotification(title, options);
+    } catch (error) {
+        await broadcastPushReceived(
+            {
+                title,
+                notification_id: data.notification_id,
+                order_number: data.order_number,
+                data,
+                notification_displayed_by_service_worker: false,
+                notification_error: String(error),
+            },
+            clients,
+        );
+    }
+}
+
+async function getWindowClients() {
+    return self.clients.matchAll({
         type: "window",
         includeUncontrolled: true,
     });
+}
 
-    for (const client of clients) {
+async function broadcastPushReceived(payload, clients) {
+    const targetClients = clients || (await getWindowClients());
+
+    for (const client of targetClients) {
         client.postMessage({
             type: "FCM_PUSH_RECEIVED",
             payload,

@@ -31,6 +31,7 @@ import { clearOrderNotifications } from "@/app/services/notification.service";
 import {
     registerFirebaseNotificationToken,
     showBrowserNotification,
+    showBrowserNotificationFromPayload,
     subscribeForegroundNotifications,
     unregisterFirebaseNotificationToken,
 } from "@/app/lib/firebase-notifications";
@@ -129,6 +130,7 @@ export default function Navbar() {
             toast.success(title, {
                 description,
             });
+            showBrowserNotificationFromPayload(payload);
             notifyNotificationsChanged();
             notifyAuthChanged();
             refreshCustomerOrderDetailFromPushPayload(payload);
@@ -155,7 +157,10 @@ export default function Navbar() {
             notifyNotificationsChanged();
             refreshCustomerOrderDetailFromPushPayload(event.data.payload);
 
-            if (event.data.payload.notification_displayed_by_service_worker) {
+            if (
+                event.data.payload.notification_displayed_by_service_worker ||
+                event.data.payload.notification_handled_by_visible_client
+            ) {
                 return;
             }
 
