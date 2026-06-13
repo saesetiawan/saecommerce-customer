@@ -10,7 +10,6 @@ const imageHostnames = (
     .filter(Boolean);
 
 const nextConfig: NextConfig = {
-    output: "standalone",
     images: {
         remotePatterns: imageHostnames.map((hostname) => ({
             protocol: "https",
